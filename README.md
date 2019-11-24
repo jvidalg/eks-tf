@@ -1,8 +1,44 @@
 # terraform-aws-eks
 
-[![CircleCI](https://circleci.com/gh/WesleyCharlesBlake/terraform-aws-eks.svg?style=svg)](https://circleci.com/gh/WesleyCharlesBlake/terraform-aws-eks)
+Customized EKS cluster provisioned with Terraform based on:
 [![TerraformRefigistry](https://img.shields.io/badge/Terraform%20Registry-version_2-blue.svg)](https://registry.terraform.io/modules/WesleyCharlesBlake/eks/aws/)
 
+```
+tree                                                 
+.
+├── LICENSE
+├── README.md
+├── backend
+│   ├── main.tf
+│   ├── terraform.tfstate
+│   └── variables.tf
+├── envs
+│   └── dev
+│       ├── main.tf
+│       ├── outputs.tf
+│       ├── terraform.tfstate
+│       ├── terraform.tfstate.backup
+│       ├── terraform.tfvars
+│       └── variables.tf
+├── modules
+│   └── eks
+│       ├── bastion.tf
+│       ├── config.tf
+│       ├── data.tf
+│       ├── ec2-key.tf
+│       ├── eks-cluster.tf
+│       ├── eks-worker-nodes-public.tf
+│       ├── eks-worker-nodes.tf
+│       ├── iam.tf
+│       ├── network.tf
+│       ├── providers.tf
+│       ├── sec-groups.tf
+│       └── workstation-external-ip.tf
+└── versions.tf
+```
+
+Added **backend** directory to provision s3 and dynamo table if there was none previously available.
+Added **env** to separate environments and set custom values according each one needs.
 
 Deploy a full AWS EKS cluster with Terraform
 
