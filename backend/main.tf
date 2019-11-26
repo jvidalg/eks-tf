@@ -3,23 +3,23 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "terraform-state-storage-s3" {
-    bucket = "var.s3_bucket_name"
+    bucket = var.s3_bucket_name
 
     versioning {
       enabled = true
     }
 
     lifecycle {
-      prevent_destroy = true
+      prevent_destroy = false
     }
 
-    tags {
+    tags={
       Name = "S3 Remote Terraform State Store"
     }
 }
 
 resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
-  name = "var.dynamodb_table_name"
+  name = var.dynamodb_table_name
   hash_key = "LockID"
   read_capacity = 20
   write_capacity = 20
@@ -29,7 +29,7 @@ resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
     type = "S"
   }
 
-  tags {
+  tags={
     Name = "DynamoDB Terraform State Lock Table"
   }
 }

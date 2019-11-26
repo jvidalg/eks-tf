@@ -1,6 +1,6 @@
-#
-# Provider Configuration
-
+####################
+# Setup providers
+####################
 variable "aws-region" {}
 
 provider "aws" {
@@ -8,3 +8,5 @@ provider "aws" {
 }
 
 provider "http" {}
+
+provider "helm" {}

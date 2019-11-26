@@ -1,0 +1,96 @@
+image:
+  name: jvidal22/tf12_helm_kctl_aws:1.1
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+stages:
+  - validate
+  - plan
+  - apply
+
+#########################################################
+# Anchors definition                                    #
+# Note: apply should be refactor to remove k8s steps    #
+#       k8ssetup should manage those steps.             #
+#########################################################
+.validate: &validate
+  stage: validate
+  script:
+    - terraform validate
+    - terraform fmt -check=true
+
+.plan: &plan
+  stage: plan
+  script:
+    - terraform plan -out "$ENV.tfplan"
+  artifacts:
+    name: plan
+    paths:
+      - $ENV.tfplan
+
+.apply: &apply
+  stage: apply
+  when: manual
+  allow_failure: true
+  script:
+    - terraform apply -input=false -auto-approve
+    - mkdir ~/.kube
+    - terraform output kubeconfig > ~/.kube/eks-cluster
+    - export KUBECONFIG=~/.kube/eks-cluster
+    - terraform output config-map > config-map-aws-auth.yaml
+    - kubectl apply -f config-map-aws-auth.yaml
+  environment:
+     name: $ENV
+  only:
+  - master
+
+.k8ssetup: &k8ssetup
+  script:
+    - mkdir ~/.kube
+    - terraform output kubeconfig > ~/.kube/eks-cluster
+    - export KUBECONFIG=~/.kube/eks-cluster
+    - terraform output config-map > config-map-aws-auth.yaml
+    - kubectl apply -f config-map-aws-auth.yaml
+
+
+#########################################################
+# Environments:                                         #
+# Currently using variables to define environments      #
+# This should be changed to use branches instead.       #
+#########################################################
+
+.development: &development
+  variables:
+    ENV: development
+    
+cache:
+  paths:
+    - .terraform
+
+before_script:
+  - export TF_IN_AUTOMATION=true
+  - terraform --version
+  - cd envs/dev
+  - terraform init
+
+#######################################################
+# Stages calls                                        #
+#######################################################
+
+development_validate:
+  <<: [*development, *validate]
+
+development_plan:
+  <<: [*development, *plan]
+
+development_apply:
+  <<: [*development, *apply, *k8ssetup]
+  # script:
+  #   - *development
+  #   - *apply
+  #   - *k8ssetup
+  dependencies:
+    - development_plan
+
+
